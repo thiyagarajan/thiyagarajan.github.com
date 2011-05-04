@@ -1,0 +1,116 @@
+<html>
+<head>
+
+<style type="text/css">
+#TheForm select { font-size: medium; width: 120px; }
+</style>
+
+<script type="text/javascript">
+var monthNames = new Array("--Month?--","January","February","March","April",
+"May","June","July","August","September",
+"October","November","December");
+
+function changeDate(sel)
+{
+// parent form of everything
+var form = sel.form; 
+
+// get current year, month, day for use later:
+var now = new Date( );
+var curYear = now.getFullYear( );
+var curMonth = now.getMonth() + 1; // js months are 0 to 11
+var curDay = now.getDate();
+
+// analyze source of the change
+var toFrom = sel.name.charAt(0); // always f(rom) or t(0)
+var unit = sel.name.charAt(1); // Y(ear) or M(onth)
+
+// set up the sel references to appropriate set...
+var selYear = toFrom == "f" ? form.fYear : form.tYear;
+var selMonth = toFrom == "f" ? form.fMonth : form.tMonth;
+var selDay = toFrom == "f" ? form.fDay : form.tDay;
+
+// need selected year to calculate Feb days and how many months
+var year = parseInt(selYear.options[selYear.selectedIndex].text)
+
+// if year changed, then must rebuild months:
+if ( unit == "Y" )
+{
+selMonth.options.length = 1;
+for ( var m = 0; m <= (year == curYear ? curMonth : 12); ++m )
+{
+selMonth.options[m] = new Option(monthNames[m],m);
+}
+selMonth.selectedIndex = 0;
+selDay.options.length = 1;
+selDay.selectedIndex = 0;
+} else {
+// change of month, so rebuild the days:
+selDay.options.length = 1;
+var lastDay = 31;
+switch ( selMonth.selectedIndex )
+{
+case 0: 
+lastDay = 0; break;
+case 4: case 6: case 9: case 11: /* april, june, sept, nov */
+lastDay = 30; break;
+case 2:
+lastDay = ( year % 4 == 0 ? 29 : 28 );
+}
+// but if current year and month selected, last day is today
+if ( year == curYear && selMonth.selectedIndex == curMonth ) 
+{
+lastDay = curDay;
+}
+for ( var d = 1; d <= lastDay; ++d )
+{
+selDay.options[d] = new Option(d,d);
+}
+}
+}
+
+function setupPickers( )
+{
+// get current year, month, day for use later:
+var now = new Date( );
+var curYear = now.getFullYear( );
+var curMonth = now.getMonth() + 1; // js months are 0 to 11
+var curDay = now.getDate();
+
+var form = document.TheForm;
+var selF = form.fYear;
+var selT = form.tYear;
+// allow last 10 years to be chosen (easy to change this)
+for ( var i = 1; i <= 10; ++i )
+{
+var y = curYear - 10 + i;
+selF.options[i] = new Option(y,y);
+selT.options[i] = new Option(y,y);
+}
+// for the TO side, we force feed to current day
+// So first fake a change of year to this year:
+selT.selectedIndex = selT.options.length - 1; // always last in list
+changeDate( selT );
+// and then fake a change of month to this month:
+form.tMonth.selectedIndex = curMonth;
+changeDate( form.tMonth );
+// and finally select today:
+form.tDay.selectedIndex = curDay;
+} 
+
+</script>
+<body onLoad="setupPickers( );">
+
+<form name="TheForm" id="TheForm">
+FROM:<br>
+Year: <select name="fYear" onChange="changeDate(this);"><option value=0>--Year?--</option></select>
+&nbsp;Month: <select name="fMonth" onChange="changeDate(this);"><option value=0>--Month?--</option></select>
+&nbsp;Day: <select name="fDay"><option value=0>--Day?--</option></select>
+<br><br><br>
+TO:<br>
+Year: <select name="tYear" onChange="changeDate(this);"><option value=0>--Year?--</option></select>
+&nbsp;Month: <select name="tMonth" onChange="changeDate(this);"><option value=0>--Month?--</option></select>
+&nbsp;Day: <select name="tDay"><option value=0>--Day?--</option></select>
+</form>
+</body>
+</html>
